@@ -2,12 +2,12 @@
 
 ## Project Structure
 
-- `dev-overlay/` - The UI that Next.js developers can interact with in development.
-- `server/` - Code that runs in the Next.js development server.
-- `shared/` - Anything that doesn't fit in
-- `userspace/` - Code that runs in the user's application.
+- `next-devtools/dev-overlay/` - The UI that Next.js developers can interact with in development.
+- `next-devtools/server/` - Code that runs in the Next.js development server.
+- `next-devtools/shared/` - Anything that doesn't fit in
+- `next-devtools/userspace/` - Code that runs in the user's application.
 
-Modules in `dev-overlay/` are isolated. Any stateful module will not share state with e.g. `userspace/`. Stateful modules `shared/` cannot be used to pass data from `dev-overlay/` to `userspace/` or vice versa.
+Modules in `dev-overlay/` are isolated from the rest of the source. Any stateful module will not share state with e.g. `userspace/`. Stateful modules in `shared/` cannot be used to pass data from `dev-overlay/` to `userspace/` or vice versa.
 
 `userspace/` code can send messages to `dev-overlay/` via the `dispatcher` imported from `next/dist/compiled/next-devtools`.
 
