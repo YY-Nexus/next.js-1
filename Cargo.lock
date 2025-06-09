@@ -996,7 +996,7 @@ dependencies = [
 [[package]]
 name = "bytes-str"
 version = "0.2.6"
-source = "git+https://github.com/dudykr/ddbase.git?branch=kdy1%2Feven-more-api#5491f3c6e0edfd6de57f47f3b307cec3dcbb5774"
+source = "git+https://github.com/dudykr/ddbase.git?branch=kdy1%2Feven-more-api#e9924f551948a4e98e10cdb1ccd462bee9a98d3f"
 dependencies = [
  "bytes",
  "rkyv 0.8.9",
