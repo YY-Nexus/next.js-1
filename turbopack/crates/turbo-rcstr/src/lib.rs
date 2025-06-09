@@ -9,6 +9,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
+use bytes_str::BytesStr;
 use debug_unreachable::debug_unreachable;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use shrink_to_fit::ShrinkToFit;
@@ -359,6 +360,13 @@ macro_rules! rcstr {
 impl ShrinkToFit for RcStr {
     #[inline(always)]
     fn shrink_to_fit(&mut self) {}
+}
+
+/// TODO: Make this efficient
+impl From<BytesStr> for RcStr {
+    fn from(s: BytesStr) -> Self {
+        RcStr::from(s.as_str())
+    }
 }
 
 #[cfg(feature = "napi")]
