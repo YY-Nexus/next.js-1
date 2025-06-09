@@ -4559,6 +4559,7 @@ name = "next-api"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "codspeed-criterion-compat",
  "either",
  "futures",
  "indexmap 2.7.1",
@@ -4578,7 +4579,6 @@ dependencies = [
  "turbopack",
  "turbopack-browser",
  "turbopack-core",
- "turbopack-create-test-app",
  "turbopack-ecmascript",
  "turbopack-node",
  "turbopack-nodejs",
