@@ -286,27 +286,26 @@ impl RegisterContext<'_> {
             }
 
             for item in &impl_item.items {
-                if let syn::ImplItem::Fn(method_item) = item {
-                    if method_item
+                if let syn::ImplItem::Fn(method_item) = item
+                    && method_item
                         .attrs
                         .iter()
                         .any(|a| is_turbo_attribute(a, "function"))
-                    {
-                        let method_ident = &method_item.sig.ident;
-                        let function_type_ident = if let Some(trait_ident) = &trait_ident {
-                            get_trait_impl_function_ident(&struct_ident, trait_ident, method_ident)
-                        } else {
-                            get_impl_function_ident(&struct_ident, method_ident)
-                        };
+                {
+                    let method_ident = &method_item.sig.ident;
+                    let function_type_ident = if let Some(trait_ident) = &trait_ident {
+                        get_trait_impl_function_ident(&struct_ident, trait_ident, method_ident)
+                    } else {
+                        get_impl_function_ident(&struct_ident, method_ident)
+                    };
 
-                        let global_name = if let Some(trait_ident) = &trait_ident {
-                            self.get_global_name(&[&struct_ident, trait_ident, method_ident])
-                        } else {
-                            self.get_global_name(&[&struct_ident, method_ident])
-                        };
+                    let global_name = if let Some(trait_ident) = &trait_ident {
+                        self.get_global_name(&[&struct_ident, trait_ident, method_ident])
+                    } else {
+                        self.get_global_name(&[&struct_ident, method_ident])
+                    };
 
-                        self.register(function_type_ident, global_name)?;
-                    }
+                    self.register(function_type_ident, global_name)?;
                 }
             }
         }
@@ -380,17 +379,16 @@ impl RegisterContext<'_> {
                     attrs,
                     ..
                 }) = item
+                    && attrs.iter().any(|a| is_turbo_attribute(a, "function"))
                 {
-                    if attrs.iter().any(|a| is_turbo_attribute(a, "function")) {
-                        let method_ident = &sig.ident;
-                        let function_type_ident =
-                            get_trait_default_impl_function_ident(trait_ident, method_ident);
+                    let method_ident = &sig.ident;
+                    let function_type_ident =
+                        get_trait_default_impl_function_ident(trait_ident, method_ident);
 
-                        self.register(
-                            function_type_ident,
-                            self.get_global_name(&[trait_ident, method_ident]),
-                        )?;
-                    }
+                    self.register(
+                        function_type_ident,
+                        self.get_global_name(&[trait_ident, method_ident]),
+                    )?;
                 }
             }
 

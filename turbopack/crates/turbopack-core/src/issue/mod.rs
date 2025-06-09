@@ -861,8 +861,11 @@ impl PlainIssue {
         };
         let trait_ref = issue.into_trait_ref().await?;
 
+        let deref: &dyn Issue = std::ops::Deref::deref(&trait_ref);
+        let severity = deref.severity();
+
         Ok(Self::cell(Self {
-            severity: issue.severity().await?,
+            severity,
             file_path: issue.file_path().to_string().owned().await?,
             stage: issue.stage().owned().await?,
             title: issue.title().owned().await?,
@@ -974,7 +977,7 @@ pub trait IssueReporter {
         self: Vc<Self>,
         issues: TransientInstance<CapturedIssues>,
         source: TransientValue<RawVc>,
-        min_failing_severity: Vc<IssueSeverity>,
+        min_failing_severity: IssueSeverity,
     ) -> Vc<bool>;
 }
 
@@ -1118,7 +1121,7 @@ where
 pub async fn handle_issues<T: Send>(
     source_op: OperationVc<T>,
     issue_reporter: Vc<Box<dyn IssueReporter>>,
-    min_failing_severity: Vc<IssueSeverity>,
+    min_failing_severity: IssueSeverity,
     path: Option<&str>,
     operation: Option<&str>,
 ) -> Result<()> {

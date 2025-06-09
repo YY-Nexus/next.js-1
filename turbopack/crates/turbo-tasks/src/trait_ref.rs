@@ -74,12 +74,13 @@ impl<'de, T> Deserialize<'de> for TraitRef<T> {
 
 impl<U> std::ops::Deref for TraitRef<Box<U>>
 where
-    U: VcValueTrait + ?Sized + std::ptr::Pointee<Metadata = std::ptr::DynMetadata<U>>,
+    Box<U>: VcValueTrait,
+    U: std::ptr::Pointee<Metadata = std::ptr::DynMetadata<U>> + ?Sized,
 {
     type Target = U;
 
     fn deref(&self) -> &Self::Target {
-        let trait_id = U::get_trait_type_id();
+        let trait_id = <Box<U> as VcValueTrait>::get_trait_type_id();
         let downcast_ptr = registry::get_value_type(self.shared_reference.type_id)
             .as_trait_ptr::<Self::Target>(trait_id, self.shared_reference.reference.0.as_ptr());
         // SAFETY: the shared reference is guaranteed to outlive &self, and the returned reference

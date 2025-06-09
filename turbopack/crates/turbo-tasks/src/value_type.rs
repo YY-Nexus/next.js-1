@@ -203,7 +203,7 @@ impl ValueType {
         ptr: *const (dyn Any + Send + Sync),
     ) -> *const T
     where
-        T: VcValueTrait + ?Sized + std::ptr::Pointee<Metadata = std::ptr::DynMetadata<T>>,
+        T: std::ptr::Pointee<Metadata = std::ptr::DynMetadata<T>> + ?Sized,
     {
         let vtable = *self.traits.get(&trait_type).unwrap();
         let vtable = unsafe {

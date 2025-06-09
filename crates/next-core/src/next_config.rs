@@ -1642,9 +1642,8 @@ struct OutdatedConfigIssue {
 
 #[turbo_tasks::value_impl]
 impl Issue for OutdatedConfigIssue {
-    #[turbo_tasks::function]
-    fn severity(&self) -> Vc<IssueSeverity> {
-        IssueSeverity::Error.into()
+    fn severity(&self) -> IssueSeverity {
+        IssueSeverity::Error
     }
 
     #[turbo_tasks::function]
