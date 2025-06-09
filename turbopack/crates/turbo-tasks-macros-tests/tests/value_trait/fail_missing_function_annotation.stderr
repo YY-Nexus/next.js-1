@@ -1,39 +1,39 @@
 error: trait items cannot be operations
-  --> tests/value_trait/fail_missing_function_annotation.rs:13:29
+  --> tests/value_trait/fail_missing_function_annotation.rs:14:29
    |
-13 |     #[turbo_tasks::function(operation)]
+14 |     #[turbo_tasks::function(operation)]
    |                             ^^^^^^^^^
 
 error: Expected return type to be `turbo_tasks::Vc<T>` or `anyhow::Result<Vc<T>>`. Unable to process type.
-  --> tests/value_trait/fail_missing_function_annotation.rs:23:23
+  --> tests/value_trait/fail_missing_function_annotation.rs:24:23
    |
-23 |     fn item(&self) -> bool {
+24 |     fn item(&self) -> bool {
    |                       ^^^^
 
 error[E0053]: method `item` has an incompatible type for trait
-  --> tests/value_trait/fail_missing_function_annotation.rs:20:1
+  --> tests/value_trait/fail_missing_function_annotation.rs:21:1
    |
-20 | #[turbo_tasks::value_impl]
+21 | #[turbo_tasks::value_impl]
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `&MyStruct`, found `Vc<MyStruct>`
    |
 note: type in trait
-  --> tests/value_trait/fail_missing_function_annotation.rs:8:13
+  --> tests/value_trait/fail_missing_function_annotation.rs:9:13
    |
-8  |     fn item(&self) -> bool;
+9  |     fn item(&self) -> bool;
    |             ^^^^^
    = note: expected signature `fn(&MyStruct) -> bool`
               found signature `fn(Vc<MyStruct>) -> bool`
    = note: this error originates in the attribute macro `turbo_tasks::value_impl` (in Nightly builds, run with -Z macro-backtrace for more info)
 help: change the self-receiver type to match the trait
    |
-20 - #[turbo_tasks::value_impl]
-20 + &self
+21 - #[turbo_tasks::value_impl]
+21 + &self
    |
 
 error[E0277]: the trait bound `bool: turbo_tasks::task::TaskOutput` is not satisfied
-  --> tests/value_trait/fail_missing_function_annotation.rs:23:23
+  --> tests/value_trait/fail_missing_function_annotation.rs:24:23
    |
-23 |     fn item(&self) -> bool {
+24 |     fn item(&self) -> bool {
    |                       ^^^^ the trait `turbo_tasks::task::TaskOutput` is not implemented for `bool`
    |
    = help: the following other types implement trait `turbo_tasks::task::TaskOutput`:
@@ -42,9 +42,9 @@ error[E0277]: the trait bound `bool: turbo_tasks::task::TaskOutput` is not satis
              Vc<T>
 
 error[E0277]: the trait bound `bool: turbo_tasks::task::TaskOutput` is not satisfied
-  --> tests/value_trait/fail_missing_function_annotation.rs:20:1
+  --> tests/value_trait/fail_missing_function_annotation.rs:21:1
    |
-20 | #[turbo_tasks::value_impl]
+21 | #[turbo_tasks::value_impl]
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `turbo_tasks::task::TaskOutput` is not implemented for `bool`
    |
    = help: the following other types implement trait `turbo_tasks::task::TaskOutput`:
@@ -54,9 +54,9 @@ error[E0277]: the trait bound `bool: turbo_tasks::task::TaskOutput` is not satis
    = note: this error originates in the attribute macro `turbo_tasks::value_impl` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0277]: the trait bound `fn() -> bool {<MyStruct as MyStruct_MyTrait_item_inline>::item_turbo_tasks_function_inline}: IntoTaskFn<_, _>` is not satisfied
-  --> tests/value_trait/fail_missing_function_annotation.rs:20:1
+  --> tests/value_trait/fail_missing_function_annotation.rs:21:1
    |
-20 | #[turbo_tasks::value_impl]
+21 | #[turbo_tasks::value_impl]
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^ unsatisfied trait bound
    |
    = help: the trait `turbo_tasks::task::function::TaskFnInputFunction<_, _>` is not implemented for fn item `fn() -> bool {<MyStruct as MyStruct_MyTrait_item_inline>::item_turbo_tasks_function_inline}`
