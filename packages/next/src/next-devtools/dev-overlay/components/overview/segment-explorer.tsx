@@ -3,11 +3,8 @@ import { css } from '../../utils/css'
 import type { DevToolsInfoPropsCore } from '../errors/dev-tools-indicator/dev-tools-info/dev-tools-info'
 import { DevToolsInfo } from '../errors/dev-tools-indicator/dev-tools-info/dev-tools-info'
 import { cx } from '../../utils/cx'
-import {
-  type SegmentNode,
-  useSegmentTreeClientState,
-} from '../../../../shared/lib/devtool/app-segment-tree'
-import type { Trie, TrieNode } from '../../../../shared/lib/devtool/trie'
+import { useSegmentTree } from '../../segment-explorer'
+import type { SegmentTrieNode } from '../../segment-explorer'
 
 const IconLayout = (props: React.SVGProps<SVGSVGElement>) => {
   return (
@@ -49,34 +46,24 @@ const ICONS = {
   page: <IconPage width={16} />,
 }
 
-function PageSegmentTree({ tree }: { tree: Trie<SegmentNode> | undefined }) {
-  if (!tree) {
-    return null
-  }
+function PageSegmentTree({ tree }: { tree: SegmentTrieNode }) {
   return (
     <div
       className="segment-explorer-content"
       data-nextjs-devtool-segment-explorer
     >
-      <PageSegmentTreeLayerPresentation
-        tree={tree}
-        node={tree.getRoot()}
-        level={0}
-        segment=""
-      />
+      <PageSegmentTreeLayerPresentation node={tree} level={0} segment="" />
     </div>
   )
 }
 
 function PageSegmentTreeLayerPresentation({
-  tree,
   segment,
   node,
   level,
 }: {
-  tree: Trie<SegmentNode>
   segment: string
-  node: TrieNode<SegmentNode>
+  node: SegmentTrieNode
   level: number
 }) {
   const pagePath = node.value?.pagePath || ''
@@ -147,7 +134,6 @@ function PageSegmentTreeLayerPresentation({
               <PageSegmentTreeLayerPresentation
                 key={childSegment}
                 segment={childSegment}
-                tree={tree}
                 node={child}
                 level={level + 1}
               />
@@ -162,14 +148,11 @@ function PageSegmentTreeLayerPresentation({
 export function SegmentsExplorer(
   props: DevToolsInfoPropsCore & HTMLProps<HTMLDivElement>
 ) {
-  const ctx = useSegmentTreeClientState()
-  if (!ctx) {
-    return null
-  }
+  const tree = useSegmentTree()
 
   return (
     <DevToolsInfo title="Segment Explorer" {...props}>
-      <PageSegmentTree tree={ctx.tree} />
+      <PageSegmentTree tree={tree} />
     </DevToolsInfo>
   )
 }
