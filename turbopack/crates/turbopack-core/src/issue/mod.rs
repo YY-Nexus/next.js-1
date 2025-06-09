@@ -15,9 +15,9 @@ use auto_hash_map::AutoSet;
 use serde::{Deserialize, Serialize};
 use turbo_rcstr::RcStr;
 use turbo_tasks::{
-    CollectiblesSource, NonLocalValue, OperationVc, RawVc, ReadRef, ResolvedVc, TaskInput,
-    TransientInstance, TransientValue, TryJoinIterExt, Upcast, ValueDefault, ValueToString, Vc,
-    emit, trace::TraceRawVcs,
+    CollectiblesSource, IntoTraitRef, NonLocalValue, OperationVc, RawVc, ReadRef, ResolvedVc,
+    TaskInput, TransientInstance, TransientValue, TryJoinIterExt, Upcast, ValueDefault,
+    ValueToString, Vc, emit, trace::TraceRawVcs,
 };
 use turbo_tasks_fs::{FileContent, FileLine, FileLinesContent, FileSystem, FileSystemPath};
 use turbo_tasks_hash::{DeterministicHash, Xxh3Hash64Hasher};
@@ -104,9 +104,8 @@ pub enum StyledString {
 pub trait Issue {
     /// Severity allows the user to filter out unimportant issues, with Bug
     /// being the highest priority and Info being the lowest.
-    #[turbo_tasks::function]
-    fn severity(self: Vc<Self>) -> Vc<IssueSeverity> {
-        IssueSeverity::Error.into()
+    fn severity(&self) -> IssueSeverity {
+        IssueSeverity::Error
     }
 
     /// The file path that generated the issue, displayed to the user as message
@@ -860,9 +859,10 @@ impl PlainIssue {
             Some(detail) => Some((*detail.await?).clone()),
             None => None,
         };
+        let trait_ref = issue.into_trait_ref().await?;
 
         Ok(Self::cell(Self {
-            severity: *issue.severity().await?,
+            severity: issue.severity().await?,
             file_path: issue.file_path().to_string().owned().await?,
             stage: issue.stage().owned().await?,
             title: issue.title().owned().await?,
