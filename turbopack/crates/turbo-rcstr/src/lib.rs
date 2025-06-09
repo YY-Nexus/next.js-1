@@ -9,7 +9,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use bytes_str::BytesStr;
+use bytes_str::{BytesStr, BytesString};
 use debug_unreachable::debug_unreachable;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use shrink_to_fit::ShrinkToFit;
@@ -107,23 +107,26 @@ impl RcStr {
     /// - If the reference count is 1, the `Arc` can be unwrapped, giving ownership of the
     ///   underlying string without cloning in `O(1)` time.
     /// - This avoids some of the potential overhead of the `Display` trait.
-    pub fn into_owned(self) -> String {
+    pub fn into_owned(self) -> BytesString {
         match self.tag() {
             DYNAMIC_TAG => {
                 // convert `self` into `arc`
                 let arc = unsafe { dynamic::restore_arc(ManuallyDrop::new(self).unsafe_data) };
                 match Arc::try_unwrap(arc) {
-                    Ok(v) => v.value,
-                    Err(arc) => arc.value.to_string(),
+                    Ok(v) => v.value.into(),
+                    Err(arc) => arc.value.clone().into(),
                 }
             }
-            INLINE_TAG => self.as_str().to_string(),
+            INLINE_TAG => unsafe {
+                // Safety: we know this is valid UTF-8
+                BytesString::from_utf8_slice(self.as_str().as_bytes()).unwrap_unchecked()
+            },
             _ => unsafe { debug_unreachable!() },
         }
     }
 
-    pub fn map(self, f: impl FnOnce(String) -> String) -> Self {
-        RcStr::from(Cow::Owned(f(self.into_owned())))
+    pub fn map(self, f: impl FnOnce(BytesString) -> BytesString) -> Self {
+        RcStr::from(f(self.into_owned()))
     }
 
     #[inline]
@@ -161,30 +164,36 @@ impl Borrow<str> for RcStr {
     }
 }
 
-impl From<Arc<String>> for RcStr {
-    fn from(s: Arc<String>) -> Self {
-        match Arc::try_unwrap(s) {
-            Ok(v) => new_atom(Cow::Owned(v)),
-            Err(arc) => new_atom(Cow::Borrowed(&**arc)),
-        }
+impl From<BytesStr> for RcStr {
+    fn from(s: BytesStr) -> Self {
+        new_atom(s)
+    }
+}
+
+impl From<BytesString> for RcStr {
+    fn from(s: BytesString) -> Self {
+        RcStr::from(BytesStr::from(s))
     }
 }
 
 impl From<String> for RcStr {
     fn from(s: String) -> Self {
-        new_atom(Cow::Owned(s))
+        new_atom(s.into())
     }
 }
 
 impl From<&'_ str> for RcStr {
     fn from(s: &str) -> Self {
-        new_atom(Cow::Borrowed(s))
+        new_atom(BytesStr::from_str_slice(s))
     }
 }
 
 impl From<Cow<'_, str>> for RcStr {
     fn from(s: Cow<str>) -> Self {
-        new_atom(s)
+        match s {
+            Cow::Borrowed(s) => s.into(),
+            Cow::Owned(s) => s.into(),
+        }
     }
 }
 
@@ -241,7 +250,11 @@ impl Display for RcStr {
 
 impl From<RcStr> for String {
     fn from(s: RcStr) -> Self {
-        s.into_owned()
+        let bytes = s.into_owned().into_bytes();
+        unsafe {
+            // Safety: BytesStr is always valid UTF-8
+            String::from_utf8_unchecked(bytes.into())
+        }
     }
 }
 
@@ -360,13 +373,6 @@ macro_rules! rcstr {
 impl ShrinkToFit for RcStr {
     #[inline(always)]
     fn shrink_to_fit(&mut self) {}
-}
-
-/// TODO: Make this efficient
-impl From<BytesStr> for RcStr {
-    fn from(s: BytesStr) -> Self {
-        RcStr::from(s.as_str())
-    }
 }
 
 #[cfg(feature = "napi")]

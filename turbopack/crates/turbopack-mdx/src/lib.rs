@@ -169,13 +169,15 @@ impl MdxTransformedAsset {
             provider_import_source: transform_options
                 .provider_import_source
                 .clone()
-                .map(RcStr::into_owned),
+                .map(RcStr::into_owned)
+                .map(From::from),
             jsx: transform_options.jsx.unwrap_or(false), // true means 'preserve' jsx syntax.
             jsx_runtime,
             jsx_import_source: transform_options
                 .jsx_import_source
                 .clone()
-                .map(RcStr::into_owned),
+                .map(RcStr::into_owned)
+                .map(From::from),
             filepath: Some(self.source.ident().path().await?.to_string()),
             ..Default::default()
         };

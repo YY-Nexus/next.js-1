@@ -532,7 +532,7 @@ impl PostCssTransformedAsset {
             resolve_options_context: None,
             args: vec![
                 ResolvedVc::cell(content.into()),
-                ResolvedVc::cell(css_path.into()),
+                ResolvedVc::cell(css_path.into_string().into()),
                 ResolvedVc::cell(source_map.into()),
             ],
             additional_invalidation: config_changed,

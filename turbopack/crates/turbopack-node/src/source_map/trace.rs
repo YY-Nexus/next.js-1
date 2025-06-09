@@ -102,14 +102,14 @@ pub async fn trace_source_map(
         .await?;
     let result = match token {
         Token::Original(t) => TraceResult::Found(StackFrame {
-            file: Cow::Owned(t.original_file.into_owned()),
+            file: Cow::Owned(t.original_file.into_owned().into()),
             line: Some(t.original_line.saturating_add(1)),
             column: Some(t.original_column.saturating_add(1)),
             name: t
                 .name
                 .clone()
-                .map(|v| v.into_owned())
-                .or_else(|| name.map(ToString::to_string))
+                .map(|v| v.into_owned().into())
+                .or_else(|| name.map(ToString::to_string).map(From::from))
                 .map(Cow::Owned),
         }),
         _ => TraceResult::NotFound,

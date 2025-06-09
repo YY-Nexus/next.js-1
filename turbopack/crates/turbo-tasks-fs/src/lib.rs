@@ -39,6 +39,7 @@ use std::{
 use anyhow::{Context, Result, anyhow, bail};
 use auto_hash_map::{AutoMap, AutoSet};
 use bitflags::bitflags;
+use bytes::Bytes;
 use dunce::simplified;
 use glob::Glob;
 use indexmap::IndexSet;
@@ -1797,7 +1798,7 @@ impl File {
     }
 
     /// Creates a [File] from raw bytes.
-    fn from_bytes(content: Vec<u8>) -> Self {
+    fn from_bytes(content: impl Into<Bytes>) -> Self {
         File {
             meta: FileMeta::default(),
             content: Rope::from(content),
@@ -1840,7 +1841,7 @@ impl Debug for File {
 
 impl From<RcStr> for File {
     fn from(s: RcStr) -> Self {
-        s.into_owned().into()
+        File::from_bytes(s.into_owned().into_bytes())
     }
 }
 

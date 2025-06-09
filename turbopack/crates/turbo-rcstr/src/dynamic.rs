@@ -1,5 +1,6 @@
 use std::{num::NonZeroU8, ptr::NonNull};
 
+use bytes_str::BytesStr;
 use triomphe::Arc;
 
 use crate::{
@@ -8,7 +9,7 @@ use crate::{
 };
 
 pub(crate) struct PrehashedString {
-    pub value: String,
+    pub value: BytesStr,
     /// This is not the actual `fxhash`, but rather it's a value that passed to
     /// `write_u64` of [rustc_hash::FxHasher].
     pub hash: u64,
@@ -30,20 +31,20 @@ pub unsafe fn restore_arc(v: TaggedValue) -> Arc<PrehashedString> {
 
 /// This can create any kind of [Atom], although this lives in the `dynamic`
 /// module.
-pub(crate) fn new_atom<T: AsRef<str> + Into<String>>(text: T) -> RcStr {
-    let len = text.as_ref().len();
+pub(crate) fn new_atom(text: BytesStr) -> RcStr {
+    let len = text.len();
 
     if len < MAX_INLINE_LEN {
         // INLINE_TAG ensures this is never zero
         let tag = INLINE_TAG_INIT | ((len as u8) << LEN_OFFSET);
         let mut unsafe_data = TaggedValue::new_tag(tag);
         unsafe {
-            unsafe_data.data_mut()[..len].copy_from_slice(text.as_ref().as_bytes());
+            unsafe_data.data_mut()[..len].copy_from_slice(text.as_bytes());
         }
         return RcStr { unsafe_data };
     }
 
-    let hash = hash_bytes(text.as_ref().as_bytes());
+    let hash = hash_bytes(text.as_bytes());
 
     let entry: Arc<PrehashedString> = Arc::new(PrehashedString {
         value: text.into(),

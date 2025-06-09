@@ -425,6 +425,9 @@ webbrowser = "0.8.7"
 
 [patch.crates-io]
 
+bytes-str = {git="https://github.com/dudykr/ddbase.git",branch="kdy1/even-more-api"}
+
+
 ast_node = { path = '/Users/kdy1/projects/s/minifier/crates/ast_node' }
 better_scoped_tls = { path = '/Users/kdy1/projects/s/minifier/crates/better_scoped_tls' }
 binding_macros = { path = '/Users/kdy1/projects/s/minifier/crates/binding_macros' }
@@ -569,3 +572,4 @@ swc_plugin_transform_imports = { path = '/Users/kdy1/projects/s/plugins/packages
 swc_prefresh = { path = '/Users/kdy1/projects/s/plugins/packages/prefresh/transform' }
 swc_relay = { path = '/Users/kdy1/projects/s/plugins/packages/relay/transform' }
 swc_sdk = { path = '/Users/kdy1/projects/s/plugins/packages/swc-sdk/transform' }
+

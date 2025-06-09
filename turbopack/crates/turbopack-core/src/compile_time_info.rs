@@ -1,4 +1,5 @@
 use anyhow::Result;
+use bytes_str::BytesString;
 use serde::{Deserialize, Serialize};
 use turbo_rcstr::RcStr;
 use turbo_tasks::{FxIndexMap, NonLocalValue, ResolvedVc, TaskInput, Vc, trace::TraceRawVcs};
@@ -123,6 +124,12 @@ impl From<RcStr> for CompileTimeDefineValue {
 
 impl From<String> for CompileTimeDefineValue {
     fn from(value: String) -> Self {
+        Self::String(value.into())
+    }
+}
+
+impl From<BytesString> for CompileTimeDefineValue {
+    fn from(value: BytesString) -> Self {
         Self::String(value.into())
     }
 }
