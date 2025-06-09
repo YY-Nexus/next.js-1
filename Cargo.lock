@@ -992,10 +992,20 @@ checksum = "1fd0f2584146f6f2ef48085050886acf353beff7305ebd1ae69500e27c67f64b"
 
 [[package]]
 name = "bytes"
-version = "1.9.0"
+version = "1.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "325918d6fe32f23b19878fe4b34794ae41fc19ddbe53b10571a4874d44ffd39b"
+checksum = "d71b6127be86fdcfddb610f7182ac57211d4b18a3e9c82eb2d17662f2227ad6a"
 dependencies = [
+ "serde",
+]
+
+[[package]]
+name = "bytes-str"
+version = "0.2.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "db6d88f0bfe9e7ccec43a0d2aa5bc1d932cc1ddb004601f31b859da7dc71ecc0"
+dependencies = [
+ "bytes",
  "serde",
 ]
 
@@ -7158,7 +7168,8 @@ dependencies = [
 [[package]]
 name = "sourcemap"
 version = "9.2.2"
-source = "git+https://github.com/kdy1/rust-sourcemap?branch=main#804d663521d6109b3746d800918d483b97e8e108"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e22afbcb92ce02d23815b9795523c005cb9d3c214f8b7a66318541c240ea7935"
 dependencies = [
  "base64-simd 0.8.0",
  "bitvec",
@@ -8652,6 +8663,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "swc_sourcemap"
+version = "9.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5c8d25be7830fcf30414c080697f5db03cbe7467cd4908a9a77958ebc8dbbafe"
+dependencies = [
+ "base64-simd 0.8.0",
+ "bitvec",
+ "bytes-str",
+ "data-encoding",
+ "debugid",
+ "if_chain",
+ "rustc-hash 2.1.1",
+ "serde",
+ "serde_json",
+ "unicode-id-start",
+ "url",
+]
+
+[[package]]
 name = "swc_timer"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -9998,8 +10028,8 @@ dependencies = [
  "serde_bytes",
  "serde_json",
  "smallvec",
- "sourcemap",
  "swc_core",
+ "swc_sourcemap",
  "tokio",
  "tracing",
  "turbo-prehash",
@@ -10108,9 +10138,9 @@ dependencies = [
  "serde",
  "serde_json",
  "smallvec",
- "sourcemap",
  "strsim 0.11.1",
  "swc_core",
+ "swc_sourcemap",
  "tokio",
  "tracing",
  "turbo-esregex",
