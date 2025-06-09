@@ -58,13 +58,10 @@ impl StructuredImageModuleType {
         let static_asset = StaticUrlJsModule::new(*source).to_resolved().await?;
         Ok(module_asset_context
             .process(
-                Vc::upcast(
-                    StructuredImageFileSource {
-                        image: source,
-                        blur_placeholder_mode,
-                    }
-                    .cell(),
-                ),
+                Vc::upcast(StructuredImageFileSource::new(
+                    *source,
+                    blur_placeholder_mode,
+                )),
                 ReferenceType::Internal(ResolvedVc::cell(fxindexmap!(
                     rcstr!("IMAGE") => ResolvedVc::upcast(static_asset)
                 ))),

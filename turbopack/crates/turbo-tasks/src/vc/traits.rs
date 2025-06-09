@@ -1,5 +1,3 @@
-use std::any::Any;
-
 use crate::{
     NonLocalValue, ShrinkToFit, TraitTypeId, ValueTypeId, VcRead, vc::cell_mode::VcCellMode,
 };

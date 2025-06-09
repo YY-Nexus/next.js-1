@@ -29,9 +29,9 @@ fn blur_options() -> Vc<BlurPlaceholderOptions> {
 pub struct StructuredImageFileSource {
     image: ResolvedVc<Box<dyn Source>>,
     blur_placeholder_mode: BlurPlaceholderMode,
-    ident: AssetIdent,
 }
 
+#[turbo_tasks::value_impl]
 impl StructuredImageFileSource {
     #[turbo_tasks::function]
     pub fn new(
@@ -41,10 +41,6 @@ impl StructuredImageFileSource {
         Self {
             image,
             blur_placeholder_mode,
-            ident: image
-                .ident()
-                .with_modifier(modifier())
-                .rename_as("*.mjs".into()),
         }
         .cell()
     }

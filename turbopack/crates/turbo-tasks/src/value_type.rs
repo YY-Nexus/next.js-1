@@ -7,7 +7,7 @@ use std::{
     sync::Arc,
 };
 
-use auto_hash_map::{AutoMap, AutoSet};
+use auto_hash_map::AutoMap;
 use serde::{Deserialize, Serialize};
 use tracing::Span;
 
@@ -37,7 +37,7 @@ type RawCellFactoryFn = fn(TypedSharedReference) -> RawVc;
 pub struct ValueType {
     /// A readable name of the type
     pub name: String,
-    /// List of traits available
+    /// Set of traits available along with their vtabls.
     pub traits: AutoMap<TraitTypeId, DynMetadata<dyn Any + Send + Sync>>,
     /// List of trait methods available
     pub trait_methods: AutoMap<(TraitTypeId, Cow<'static, str>), FunctionId>,
@@ -106,7 +106,7 @@ impl ValueType {
     pub fn new<T: VcValueType>() -> Self {
         Self {
             name: std::any::type_name::<T>().to_string(),
-            traits: AutoSet::new(),
+            traits: AutoMap::new(),
             trait_methods: AutoMap::new(),
             magic_serialization: None,
             any_serialization: None,
@@ -120,7 +120,7 @@ impl ValueType {
     >() -> Self {
         Self {
             name: std::any::type_name::<T>().to_string(),
-            traits: AutoSet::new(),
+            traits: AutoMap::new(),
             trait_methods: AutoMap::new(),
             magic_serialization: None,
             any_serialization: Some((any_as_serialize::<T>, AnyDeserializeSeed::new::<T>())),
@@ -181,11 +181,13 @@ impl ValueType {
     }
 
     /// This is internally used by `#[turbo_tasks::value_impl]`
-    pub fn register_trait<T: VcValueTrait>(
+    pub fn register_trait<T: ?Sized>(
         &mut self,
         trait_type: TraitTypeId,
         meta: std::ptr::DynMetadata<T>,
-    ) {
+    ) where
+        Box<T>: VcValueTrait,
+    {
         let meta = unsafe {
             // Safety: DynMetadata does not store T. (And it can't, because T of DynMetadata is
             // not Sized)
@@ -195,8 +197,25 @@ impl ValueType {
         self.traits.insert(trait_type, meta);
     }
 
+    pub(crate) fn as_trait_ptr<T>(
+        &self,
+        trait_type: TraitTypeId,
+        ptr: *const (dyn Any + Send + Sync),
+    ) -> *const T
+    where
+        T: VcValueTrait + ?Sized + std::ptr::Pointee<Metadata = std::ptr::DynMetadata<T>>,
+    {
+        let vtable = *self.traits.get(&trait_type).unwrap();
+        let vtable = unsafe {
+            // Safety: DynMetadata does not store T. (And it can't, because T of DynMetadata is
+            // not Sized)
+            std::mem::transmute::<DynMetadata<dyn Any + Send + Sync>, DynMetadata<T>>(vtable)
+        };
+        std::ptr::from_raw_parts::<T>(ptr as *const (), vtable)
+    }
+
     pub fn has_trait(&self, trait_type: &TraitTypeId) -> bool {
-        self.traits.contains(trait_type)
+        self.traits.contains_key(trait_type)
     }
 
     pub fn traits_iter(&self) -> impl Iterator<Item = TraitTypeId> + '_ {

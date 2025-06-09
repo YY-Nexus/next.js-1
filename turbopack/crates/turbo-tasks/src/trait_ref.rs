@@ -4,8 +4,8 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    Vc, VcRead, VcValueTrait, VcValueType,
-    registry::get_value_type,
+    Vc, VcValueTrait,
+    registry::{self, get_value_type},
     task::shared_reference::TypedSharedReference,
     vc::{ReadVcFuture, VcValueTraitCast, cast::VcCast},
 };
@@ -74,12 +74,18 @@ impl<'de, T> Deserialize<'de> for TraitRef<T> {
 
 impl<U> std::ops::Deref for TraitRef<Box<U>>
 where
-    U: VcValueTrait,
+    U: VcValueTrait + ?Sized + std::ptr::Pointee<Metadata = std::ptr::DynMetadata<U>>,
 {
     type Target = U;
 
     fn deref(&self) -> &Self::Target {
-        todo!()
+        let trait_id = U::get_trait_type_id();
+        let downcast_ptr = registry::get_value_type(self.shared_reference.type_id)
+            .as_trait_ptr::<Self::Target>(trait_id, self.shared_reference.reference.0.as_ptr());
+        // SAFETY: the shared reference is guaranteed to outlive &self, and the returned reference
+        // is guaranteed to have a lifetime shorter than or equal to `&self` so this reference will
+        // not outlive the pointee
+        unsafe { &*downcast_ptr }
     }
 }
 
@@ -105,7 +111,10 @@ where
     }
 
     pub fn ptr_eq(this: &Self, other: &Self) -> bool {
-        triomphe::Arc::ptr_eq(&this.shared_reference.1.0, &other.shared_reference.1.0)
+        triomphe::Arc::ptr_eq(
+            &this.shared_reference.reference.0,
+            &other.shared_reference.reference.0,
+        )
     }
 }
 
@@ -119,7 +128,7 @@ where
         let TraitRef {
             shared_reference, ..
         } = trait_ref;
-        let value_type = get_value_type(shared_reference.0);
+        let value_type = get_value_type(shared_reference.type_id);
         (value_type.raw_cell)(shared_reference).into()
     }
 }
