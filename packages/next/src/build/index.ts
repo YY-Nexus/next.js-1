@@ -180,7 +180,7 @@ import {
 import { getStartServerInfo, logStartInfo } from '../server/lib/app-info-log'
 import type { NextEnabledDirectories } from '../server/base-server'
 import { hasCustomExportOutput } from '../export/utils'
-import { buildCustomRoute } from '../lib/build-custom-route'
+import { buildCustomRoute, toRscRedirect } from '../lib/build-custom-route'
 import { traceMemoryUsage } from '../lib/memory/trace'
 import { generateEncryptionKeyBase64 } from '../server/app-render/encryption-utils-server'
 import type { DeepReadonly } from '../shared/lib/deep-readonly'
@@ -1299,15 +1299,20 @@ export default async function build(
               staticRoutes.push(pageToRoute(route))
             }
           }
-
+          const manifestRedirects = redirects.map((r) =>
+            buildCustomRoute('redirect', r, restrictedRedirectPaths)
+          )
           return {
             version: 3,
             pages404: true,
             caseSensitive: !!config.experimental.caseSensitiveRoutes,
             basePath: config.basePath,
-            redirects: redirects.map((r) =>
-              buildCustomRoute('redirect', r, restrictedRedirectPaths)
-            ),
+            // When RSC request header validation is enabled, we include both RSC-specific
+            // redirects (with custom status code 278) and standard redirects to handle
+            // both RSC and non-RSC requests appropriately
+            redirects: config.experimental.validateRSCRequestHeaders
+              ? [...manifestRedirects.map(toRscRedirect), ...manifestRedirects]
+              : manifestRedirects,
             headers: headers.map((r) => buildCustomRoute('header', r)),
             rewrites: {
               beforeFiles: [],

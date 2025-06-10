@@ -12,6 +12,8 @@ import {
   type RouteType,
 } from './load-custom-routes'
 import { getRedirectStatus, modifyRouteRegex } from './redirect-status'
+import { RSC_REDIRECT_STATUS_CODE } from '../shared/lib/constants'
+import { RSC_HEADER } from '../client/components/app-router-headers'
 
 export function buildCustomRoute(
   type: 'header',
@@ -57,4 +59,32 @@ export function buildCustomRoute(
     permanent: undefined,
     regex,
   }
+}
+
+/**
+ * Converts a standard redirect route to an RSC redirect route.
+ *
+ * RSC redirects use a custom status code (278) instead of standard HTTP redirect codes
+ * to prevent browsers from automatically following the redirect. This allows the client-side
+ * RSC router to intercept and handle the redirect programmatically, providing better control
+ * over the navigation lifecycle.
+ *
+ * The function adds a header condition to only apply this redirect for RSC requests
+ * (identified by the presence of the RSC header) and sets the custom status code.
+ */
+export function toRscRedirect<T extends ManifestRedirectRoute>(
+  customRoute: T
+): T {
+  return {
+    ...customRoute,
+    statusCode: RSC_REDIRECT_STATUS_CODE,
+    permanent: undefined,
+    has: [
+      ...(customRoute.has || []),
+      {
+        type: 'header',
+        key: RSC_HEADER,
+      },
+    ],
+  } as const
 }
